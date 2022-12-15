@@ -7,12 +7,35 @@ const Write = () => {
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
     const [file, setFile] = useState(null);
-    const [photo] = useState("default_post.jpg")
+    const [photo, setPhoto] = useState("");
     const [categories, setCategories] = useState([]);
     const { user } = useContext(Context);
 
     const capitalizeFirstLetter = (string) =>
     string.charAt(0).toUpperCase() + string.slice(1);
+
+    const uploadImage = (image) => {
+        setFile(image);
+        if(image){
+            const data = new FormData();
+            data.append("file", image);
+            data.append("upload_preset", "notezipper");
+            data.append("cloud_name", "karan-346");
+            fetch("https://api.cloudinary.com/v1_1/karan-346/image/upload", {
+                method: "post",
+                body: data,
+            })
+            .then((res) => res.json())
+            .then((data) => {
+                setPhoto(data.url.toString());
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        } else {
+            setPhoto(`${process.env.REACT_APP_API}/images/default_post.jpg`);
+        }
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,16 +46,6 @@ const Write = () => {
             categories,
             photo
         };
-        if(file) {
-            const data = new FormData();
-            const filename = Date.now() + file.name;
-            data.append("name", filename);
-            data.append("file", file);
-            newPost.photo = filename;
-            try {
-                await axios.post(`/api/upload`, data);
-            } catch(err) {}
-        }
 
         try {
             const res = await axios.post(`/api/posts`, newPost);
@@ -54,7 +67,7 @@ const Write = () => {
                         type="file"
                         id="fileInput"
                         style= {{ display: "none" }}
-                        onChange={(e) => setFile(e.target.files[0])}
+                        onChange={(e) => uploadImage(e.target.files[0])}
                     />
                     <input
                         type="text"

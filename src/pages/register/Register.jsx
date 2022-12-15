@@ -7,12 +7,13 @@ const Register = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [profilePic] = useState("default.jpg")
+    const [profilePic] = useState(`${process.env.REACT_APP_API}/images/default.jpg`);
     const [error, setError] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(false);
+        
         try {
             const res = await axios.post(`/api/auth/register`, {
                 username,

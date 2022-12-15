@@ -5,14 +5,35 @@ import axios from "axios";
 import "./settings.css";
 
 const Settings = () => {
-    const {user, dispatch} = useContext(Context);
+    const {user, isFetching, dispatch} = useContext(Context);
     const [file, setFile] = useState(null);
     const [username, setUsername] = useState(user.username);
     const [email, setEmail] = useState(user.email);
     const [password, setPassword] = useState(user.password);
     const [success, setSuccess] = useState(false);
+    const [profilePic, setProfilePic] = useState(user.profilePic);
 
-    const PF = "/images/";
+    const uploadPic = (pic) => {
+        setFile(pic);
+        if(pic) {
+            const data = new FormData();
+            data.append("file", pic);
+            data.append("upload_preset", "notezipper");
+            data.append("cloud_name", "karan-346");
+            fetch("https://api.cloudinary.com/v1_1/karan-346/image/upload", {
+                method: "post",
+                body: data,
+            })
+            .then((res) => res.json())
+            .then((data) => {
+                setProfilePic(data.url.toString());
+                // console.log(pic);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        }
+    } 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,18 +42,10 @@ const Settings = () => {
             userId: user._id,
             username,
             email,
-            password
+            password,
+            profilePic
         };
-        if(file) {
-            const data = new FormData();
-            const filename = Date.now() + file.name;
-            data.append("name", filename);
-            data.append("file", file);
-            updatedUser.profilePic = filename;
-            try {
-                await axios.post(`/api/upload`, data);
-            } catch (err) {}
-        }
+        
         try {
             const res = await axios.put(`/api/users/` + user._id, updatedUser);
             setSuccess(true);
@@ -53,7 +66,7 @@ const Settings = () => {
                     <label>Profile Picture</label>
                     <div className="settingsPP">
                         <img 
-                            src={file ? URL.createObjectURL(file) : PF + user.profilePic}
+                            src={file ? URL.createObjectURL(file) : profilePic}
                             alt=""
                         />
                         <label htmlFor="fileInput">
@@ -63,7 +76,7 @@ const Settings = () => {
                             type="file"
                             id="fileInput"
                             style={{ display: "none" }}
-                            onChange={(e) => setFile(e.target.files[0])}
+                            onChange={(e) => uploadPic(e.target.files[0])}
                         />
                     </div>
                     <label>Username</label>
@@ -83,9 +96,9 @@ const Settings = () => {
                         type="password"
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <button className="settingsSubmit" type="submit">
+                    {!isFetching && !success && <button className="settingsSubmit" type="submit">
                         Update
-                    </button>
+                    </button>}
                     {success && (
                         <span 
                             style={{ color: "green", textAlign: "center", marginTop: "20px" }}

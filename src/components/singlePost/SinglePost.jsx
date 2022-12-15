@@ -9,11 +9,11 @@ const SinglePost = () => {
     const { pathname } = useLocation();
     const path = pathname.split("/")[2];
     const [post, setPost] = useState({});
-    const PF = `${process.env.REACT_APP_API}/images/`;
     const { user } = useContext(Context);
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
     const [categories, setCategories] = useState([]);
+    const [photo, setPhoto] = useState("");
     const [updateMode, setUpdateMode] = useState(false);
 
     useEffect(() => {
@@ -23,6 +23,7 @@ const SinglePost = () => {
             setTitle(res.data.title);
             setDesc(res.data.desc);
             setCategories(res.data.categories);
+            setPhoto(res.data.photo);
         };
         getPost();
     }, [path]);
@@ -56,8 +57,8 @@ const SinglePost = () => {
     return (
         <div className="singlePost">
             <div className="singlePostWrapper">
-                {post.photo && (
-                    <img src={PF + post.photo} alt="" className="singlePostImg" />
+                {photo && (
+                    <img src={photo} alt="" className="singlePostImg" />
                 )}
                 {updateMode ? (
                     <input 
